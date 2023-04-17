@@ -11,11 +11,13 @@ import nltk.tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 
-def process_data():
+def process_data(**kwargs):
     # Connect to MongoDB
     client = MongoClient('localhost', 27017)
     mydb = client["Cell_Phones"]
     my_collection = mydb["products"]
+    
+    ti = kwargs['ti']
 
     # Filtering dataset to remove unwanted elements
     result = mydb.phones.aggregate([
@@ -78,8 +80,9 @@ def process_data():
         documentsJoined.append(document)
 
 # pass on to next dag
-    with open('outputJoined.json', 'w') as outfile:
+    with open('outputCleaned.json', 'w') as outfile:
         json.dump(documentsJoined, outfile)
+        kwargs['ti'].xcom_push(key='outputCleaned', value=documentsJoined)
 
     # result = mydb.phones.aggregate([
     #     {
